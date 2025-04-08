@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+  SGE - Home
+{% endblock title %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+<script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+{% endblock head %}
+
+
+{% block content %}
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    var dailySalesData = JSON.parse('{{daily_sales_data|safe}}')
+    var dailySalesQuantityData = JSON.parse('{{daily_sales_quantity_data|safe}}')
+    var productCountByCategory = JSON.parse('{{product_count_by_category|safe}}')
+    var productCountByBrand = JSON.parse('{{product_count_by_brand|safe}}')
+
+    new Chartist.Line('#dailySalesChart', {
+        labels: dailySalesData.dates,
+        series: [
+            dailySalesData.values,
+            
+        ]
+    }, {
+        low:10,
+        showArea: true,
+        fullWidth: true,
+        chartPadding: {
+            right: 0
+        }
+    });
+    new Chartist.Bar('#dailySalesQuantityChart', {
+        labels: dailySalesQuantityData.dates,
+        series: [
+            dailySalesQuantityData.quantities,
+            
+        ]
+    }, {
+        high: 10,
+        low:0,
+        showArea: true,
+        fullWidth: true,
+        chartPadding: {
+            right: 0
+        },
+        
+    });
+    new Chartist.Bar('#productByCategoryChart', {
+        labels: productCountByCategory.names,
+        series: [
+            productCountByCategory.quantities,
+        ]
+    }, {
+        distributedSeries: true
+    });
+
+    
+    var data = {
+        labels: productCountByBrand.names,
+        series: productCountByBrand.quantities
+      };
+      
+    var options = {
+        labelInterpolationFnc: function(value) {
+          return value[0]
+        }
+      };
+      
+    var responsiveOptions = [
+        ['screen and (min-width: 640px)', {
+          chartPadding: 30,
+          labelOffset: 100,
+          labelDirection: 'explode',
+          labelInterpolationFnc: function(value) {
+            return value;
+          }
+        }],
+        ['screen and (min-width: 1024px)', {
+          labelOffset: 40,
+          chartPadding: 10
+        }]
+      ];
+      
+    new Chartist.Pie('#productByBrandChart', data, options, responsiveOptions);
+      
+});
+</script>
+
+{% if perms.products.view_product and perms.inflows.view_inflow %}
+  {% include "components/_product_metrics.html" %}
+{% endif %}  
+
+{% if perms.outflows.view_outflow %}
+  {% include "components/_sales_metrics.html" %}
+{% endif %}
+
+
+  {% if perms.outflows.view_outflow %}
+  <div class="row mt-4 justify-content-center">
+    <div class="col-md-6 text-center">
+        <h5 class="text-center mb-3">Valor de Vendas (Últimos 7 dias)</h5>
+            <div class="ct-chart" id="dailySalesChart"></div>
+        </div>
+        
+    <div class="col-md-6 text-center">
+        <h5 class="text-center mb-3">Quantidade de Vendas Diárias</h5>
+            <div class="ct-chart" id="dailySalesQuantityChart"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if perms.products.view_product %}
+  <div class="row mt-4 justify-content-center">
+    <div class="col-md-6 text-center">
+        <h5 class="mb-3">Produtos por Categoria</h5>
+            <div class="mt-4"></div>
+            <div class="embed-responsive embed-responsive-1by1 ct-chart" style="width: 400px; display: inline-block;">
+                <div class="embed-responsive-item" id="productByCategoryChart"></div>
+            </div>
+    </div>
+        
+    <div class="col-md-6 text-center">
+        <h5 class="mb-3">Produtos por Marca</h5>
+            <div class="mt-4"></div>
+            <div class="embed-responsive embed-responsive-1by1 ct-chart" style="width: 400px; display: inline-block;">
+                <div class="embed-responsive-item" id="productByBrandChart"></div>
+            </div>
+    </div>
+  </div>
+  {% endif %}
+
+{% endblock content %}
