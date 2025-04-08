@@ -274,7 +274,9 @@ The available URLs to navigate and interact with the system:
 
 ## 🖼️ System
 
-![System](estoque.png)
+![Model](stock.png)
+![Dashboard](dashboard.png)
+![Products](products.png)
 
 ---
 
