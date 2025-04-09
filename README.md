@@ -38,15 +38,55 @@ The essential functionalities for managing your stock:
 
 ---
 
-# ⚙️ Project Installation
+# 📦 Stock Management System
 
-Follow these steps to set up and run the project on your local environment.
+A robust and efficient system for total control of your inventory.
 
 ---
 
-## 🛠️ Prerequisites
+## ✨ Functional Requirements
 
-Ensure you have Python installed on your machine.
+The essential functionalities for managing your stock:
+
+* **➕ Registration:**
+    * Products (with details such as name, code, description, cost price, selling price, etc.)
+    * Brands
+    * Suppliers
+    * Categories
+    * Product Inflows (with date, quantity, supplier, etc.)
+    * Product Outflows (with date, quantity, customer/reason, etc.)
+
+* **🔍 Product Filters:**
+    * Advanced search by name, code, brand, category, and other criteria.
+
+* **📊 Automatic Stock Calculation:**
+    * Real-time update of the available quantity of each product based on registered inflows and outflows.
+
+* **🔑 Login System:**
+    * Secure user authentication for system access.
+
+* **🛡️ Permission Control:**
+    * Permission management by user and/or group.
+    * Implementation of different access levels to ensure data security and integrity.
+
+* **📈 Dashboards and Metrics:**
+    * Intuitive visual panels with key stock metrics.
+    * Sales, inflows, outflows, and total stock value charts for a clear view of your business.
+
+* **🔗 Future Integrations Support:**
+    * Architecture designed to facilitate future integrations with other systems and automations.
+
+---
+
+## ⚙️ Project Installation (Using Docker Compose)
+
+Follow these steps to set up and run the project using Docker Compose. This method containerizes the application and its dependencies for easier management.
+
+---
+
+## 🐳 Prerequisites
+
+Ensure you have Docker and Docker Compose installed on your machine. You can find installation instructions for your operating system on the official Docker website.
 
 ---
 
@@ -58,54 +98,25 @@ Ensure you have Python installed on your machine.
 
     ```bash
     git clone [REPOSITORY_URL]
+    cd [YOUR_PROJECT_DIRECTORY]
     ```
 
 ---
 
-##  Virtual Environment
+## 🛠️ Running with Docker Compose
 
-1.  Inside the cloned project directory, create an isolated Python virtual environment:
+The project is configured to run using Docker Compose. The setup involves a web application container (`sge_web`) and a database container (`sge_db`) running on a shared network (`sge_network`). The web application depends on the database service.
 
-    ```bash
-    python -m venv venv
-    ```
-
-2.  Activate the virtual environment:
-
-    * **On Linux/macOS:**
-
-        ```bash
-        source venv/bin/activate
-        ```
-
-    * **On Windows:**
-
-        ```bash
-        .\venv\Scripts\activate
-        ```
-
-    (You will see the virtual environment name `(venv)` at the beginning of your command line, indicating it's active.)
-
----
-
-## 📦 Install Dependencies
-
-1.  With the virtual environment activated, navigate to the project directory (if you're not already there).
-2.  Install all the necessary libraries and dependencies listed in the `requirements.txt` file:
+To start the application and the database, run the following command in the project's root directory:
 
     ```bash
-    pip install -r requirements.txt
+    docker-compose up -d --build
     ```
 
----
+This command will:
 
-## ⚙️ Django Migrations
-
-1.  Still in the terminal, run Django migrations to set up the database:
-
-    ```bash
-    python manage.py migrate
-    ```
+* `-d`: Run the containers in detached mode (in the background).
+* `--build`: Build the `sge_web` image if it hasn't been built yet or if the Dockerfile has changed.
 
 ---
 
@@ -114,7 +125,7 @@ Ensure you have Python installed on your machine.
 1.  Create an administrator account to access the Django admin panel:
 
     ```bash
-    python manage.py createsuperuser
+    docker exec -it <sge_web_container_name_or_id> python manage.py createsuperuser
     ```
 
     You will be prompted to provide a username, email address, and password for the superuser.
@@ -123,62 +134,61 @@ Ensure you have Python installed on your machine.
 
 ## ⚙️ Environment Configuration (.env File)
 
-Before running the application, it's recommended to configure the environment variables.
+Before running the application, it's crucial to configure the necessary environment variables. These can be set directly in your Docker environment or, more conveniently, within a `.env` file in the project's root directory, which Docker Compose can then load.
 
 1.  **Rename `.env.copy` to `.env`:** In the project's root directory, you will find a file named `.env.copy`. Rename this file to `.env`.
 
-2.  **Set the `DJANGO_SECRET_KEY`:** Open the `.env` file with a text editor. Locate the line for `DJANGO_SECRET_KEY` (it might be commented out or have a placeholder value). Replace the placeholder with a strong, randomly generated secret key for your Django application.
+2.  **Set the Environment Variables:** Open the `.env` file with a text editor. Add or modify the following variables with your specific values:
 
     ```
-    DJANGO_SECRET_KEY=your_strong_and_secret_key_here
+    DJANGO_SECRET_KEY=YOUR_DJANGO_SECRET_KEY_HERE
+    POSTGRES_USER=YOUR_POSTGRES_USERNAME
+    POSTGRES_PASSWORD=YOUR_POSTGRES_PASSWORD
+    POSTGRES_DB=YOUR_POSTGRES_DATABASE_NAME
+    POSTGRES_HOST=sge_db
+    POSTGRES_PORT=5432
     ```
 
-    **Important:** This `SECRET_KEY` is crucial for the security of your application. Do not share it publicly and ensure it is a long, random string.
+    * **`DJANGO_SECRET_KEY`**: A secret key for your Django application. Replace `YOUR_DJANGO_SECRET_KEY_HERE` with a strong, randomly generated string. **This is critical for the security of your application.**
+    * **`POSTGRES_USER`**: The username for your PostgreSQL database. Replace `YOUR_POSTGRES_USERNAME` with the appropriate username.
+    * **`POSTGRES_PASSWORD`**: The password for the PostgreSQL user. Replace `YOUR_POSTGRES_PASSWORD` with the correct password.
+    * **`POSTGRES_DB`**: The name of the PostgreSQL database to be used. Replace `YOUR_POSTGRES_DATABASE_NAME` with the desired database name.
+    * **`POSTGRES_HOST`**: The hostname for the PostgreSQL server. In the Docker Compose setup, this should be `sge_db` as the web container will communicate with the database using the service name.
+    * **`POSTGRES_PORT`**: The port number for the PostgreSQL server (default is `5432`).
 
-    **Note:** If you do not rename the `.env.copy` file to `.env` and do not set the `DJANGO_SECRET_KEY` environment variable within it, the Django project's `settings.py` will fall back to using a default, insecure `SECRET_KEY`. **This is strongly discouraged for any environment beyond local development.**
+    **Important:** Do not share your `.env` file or its contents publicly, especially the `DJANGO_SECRET_KEY` and database credentials. Ensure it is added to your `.gitignore` file if you are using Git.
+
+    **Note:** If these environment variables are not correctly configured (either in a `.env` file or directly in your Docker environment), the application will likely fail to connect to the database or will use an insecure default `SECRET_KEY` within Django's `settings.py`. **Using insecure defaults is strongly discouraged for any environment beyond local, temporary development.**
 
 ---
 
-## 🚀 Run the Server
-
-1.  Start the Django development server:
-
-    ```bash
-    python manage.py runserver
-    ```
-
-    You will see a message indicating that the server is running at `http://127.0.0.1:8000/` or `http://localhost:8000/`.
-
+Access the System
 ---
 
-## 🌐 Access the Admin in Browser
+## 🌐 Access the System
 
 1.  Open your web browser.
-2.  Navigate to the following address:
+2.  Navigate to the following address to access the Django admin panel:
 
-    ```
+    ```bash
     http://localhost:8000/admin
     ```
 
-3.  On the Django admin login page, enter the credentials (username and password) you created in the superuser step.
+    Enter the credentials (username and password) you created in the superuser step.
 
----
+3.  To access the main system, navigate to:
 
-## 🚪 Access the System
-
-1.  Using the same web browser, access the main system via the following URL:
-
-    ```
+    ```bash
     http://localhost:8000/
     ```
 
-    You should be able to interact with the application using the user you created earlier (the superuser).
-
+    You should be able to interact with the application using the superuser account.
+    
 ---
 
 ## ✅ Access Granted
 
-Congratulations! You are now inside the management panel and the main system of your Django application.
+Congratulations! Your Stock Management System is now running using Docker Compose. You can access the admin panel and the main application in your web browser.
 
 ---
 

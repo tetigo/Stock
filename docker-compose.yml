@@ -1,0 +1,31 @@
+services:
+  sge_web:
+    build: .
+    restart: always
+    ports:
+      - 8000:8000
+    networks:
+      - sge_network
+    depends_on:
+      - sge_db
+
+  sge_db:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sge
+    networks:
+      - sge_network
+
+volumes:
+  postgres_data:
+
+networks:
+  sge_network:
+    driver: bridge
+
